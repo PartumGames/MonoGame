@@ -11,7 +11,7 @@ namespace Engine_Core.Core
 
         public static void Update_Time(GameTime _gameTime)
         {
-            DeltaTime = (float)_gameTime.ElapsedGameTime.TotalSeconds;
+            DeltaTime = (float)_gameTime.ElapsedGameTime.TotalMilliseconds;
             Fps = (int)(1 / DeltaTime);
             GameTime = _gameTime;
         }

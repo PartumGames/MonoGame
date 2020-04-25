@@ -11,13 +11,27 @@ namespace Engine_Core.Core
         private static MouseState pMouse;
         private static MouseState cMouse;
 
-        public static Vector2 mousePosition = Vector2.Zero;
+        private static int pScroll;
+        private static int cScroll;
 
-        private static int pScroll = 0;
-        private static int cScroll = 0;
+        public static Vector2 MousePosition
+        {
+            get
+            {
+                return new Vector2(cMouse.Position.X, cMouse.Position.Y);
+            }
+        }
+        public static Rectangle MouseClickRect
+        {
+            get
+            {
+                return new Rectangle((int)MousePosition.X, (int)MousePosition.Y, 1, 1);
+            }
+        }
 
 
-        public static void Update_Input()
+
+        public static void UpdateInput()
         {
             pKeys = cKeys;
             cKeys = Keyboard.GetState();
@@ -27,19 +41,13 @@ namespace Engine_Core.Core
 
             pScroll = cScroll;
             cScroll = cMouse.ScrollWheelValue;
-
-            mousePosition.X = cMouse.X;
-            mousePosition.Y = cMouse.Y;
-
-            //------------------Pause/Mouse Cursor Stuff goes here
-
         }
 
 
 
         public static bool GetKeyDown(Keys _key)
         {
-            if (cKeys.IsKeyDown(_key) && !pKeys.IsKeyDown(_key))
+            if (!pKeys.IsKeyDown(_key) && cKeys.IsKeyDown(_key))
             {
                 return true;
             }
@@ -49,7 +57,7 @@ namespace Engine_Core.Core
 
         public static bool GetKeyUp(Keys _key)
         {
-            if (cKeys.IsKeyUp(_key) && !pKeys.IsKeyUp(_key))
+            if (pKeys.IsKeyDown(_key) && cKeys.IsKeyUp(_key))
             {
                 return true;
             }
@@ -59,7 +67,7 @@ namespace Engine_Core.Core
 
         public static bool GetKey(Keys _key)
         {
-            if (cKeys.IsKeyDown(_key))
+            if (pKeys.IsKeyDown(_key) && cKeys.IsKeyDown(_key))
             {
                 return true;
             }
@@ -69,19 +77,19 @@ namespace Engine_Core.Core
 
 
 
-        public static bool GetMouseButtonDown(int _index)
+        public static bool MouseButtonDown(int _button)
         {
-            if (cMouse.LeftButton == ButtonState.Pressed && pMouse.LeftButton != ButtonState.Pressed && _index == 0)
+            if (cMouse.LeftButton == ButtonState.Pressed && pMouse.LeftButton != ButtonState.Pressed && _button == 0)
             {
                 return true;
             }
 
-            if (cMouse.RightButton == ButtonState.Pressed && pMouse.RightButton != ButtonState.Pressed && _index == 1)
+            if (cMouse.RightButton == ButtonState.Pressed && pMouse.RightButton != ButtonState.Pressed && _button == 1)
             {
                 return true;
             }
 
-            if (cMouse.MiddleButton == ButtonState.Pressed && pMouse.MiddleButton != ButtonState.Pressed && _index == 2)
+            if (cMouse.MiddleButton == ButtonState.Pressed && pMouse.MiddleButton != ButtonState.Pressed && _button == 2)
             {
                 return true;
             }
@@ -89,19 +97,19 @@ namespace Engine_Core.Core
             return false;
         }
 
-        public static bool GetMouseButtonUp(int _index)
+        public static bool MouseButtonUp(int _button)
         {
-            if (cMouse.LeftButton == ButtonState.Released && pMouse.LeftButton != ButtonState.Released && _index == 0)
+            if (cMouse.LeftButton == ButtonState.Released && pMouse.LeftButton != ButtonState.Released && _button == 0)
             {
                 return true;
             }
 
-            if (cMouse.RightButton == ButtonState.Released && pMouse.RightButton != ButtonState.Released && _index == 1)
+            if (cMouse.RightButton == ButtonState.Released && pMouse.RightButton != ButtonState.Released && _button == 1)
             {
                 return true;
             }
 
-            if (cMouse.MiddleButton == ButtonState.Released && pMouse.MiddleButton != ButtonState.Released && _index == 2)
+            if (cMouse.MiddleButton == ButtonState.Released && pMouse.MiddleButton != ButtonState.Released && _button == 2)
             {
                 return true;
             }
@@ -109,20 +117,19 @@ namespace Engine_Core.Core
             return false;
         }
 
-        public static bool GetMouseButton(int _index)
+        public static bool MouseButton(int _button)
         {
-
-            if (cMouse.LeftButton == ButtonState.Pressed && _index == 0)
+            if (cMouse.LeftButton == ButtonState.Pressed && pMouse.LeftButton == ButtonState.Pressed && _button == 0)
             {
                 return true;
             }
 
-            if (cMouse.RightButton == ButtonState.Pressed && _index == 1)
+            if (cMouse.RightButton == ButtonState.Pressed && pMouse.RightButton == ButtonState.Pressed && _button == 1)
             {
                 return true;
             }
 
-            if (cMouse.MiddleButton == ButtonState.Pressed && _index == 2)
+            if (cMouse.MiddleButton == ButtonState.Pressed && pMouse.MiddleButton == ButtonState.Pressed && _button == 2)
             {
                 return true;
             }
@@ -130,7 +137,43 @@ namespace Engine_Core.Core
             return false;
         }
 
-        public static int GetScrollWheel()
+
+
+        public static float HorizontalAxis()
+        {
+            float value = 0f;
+
+            if (GetKey(Keys.A) || GetKey(Keys.Left))
+            {
+                value -= 1f;
+            }
+
+            if (GetKey(Keys.D) || GetKey(Keys.Right))
+            {
+                value += 1f;
+            }
+
+            return MathHelper.Clamp(value, -1f, 1f);
+        }
+
+        public static float VerticalAxis()
+        {
+            float value = 0f;
+
+            if (GetKey(Keys.W) || GetKey(Keys.Up))
+            {
+                value -= 1f;
+            }
+
+            if (GetKey(Keys.S) || GetKey(Keys.Down))
+            {
+                value += 1f;
+            }
+
+            return MathHelper.Clamp(value, -1f, 1f);
+        }
+
+        public static float ScrollWheel()
         {
             if (cScroll < pScroll)
             {
@@ -145,15 +188,16 @@ namespace Engine_Core.Core
             return 0;
         }
 
-        public static Vector2 GetMousePosition()
+
+        public static float Mouse_X_Axis()
         {
-            return mousePosition;
+            return pMouse.X - cMouse.X;
         }
 
-        public static Rectangle GetMouseClickRect()
+        public static float Mouse_Y_Axis()
         {
-            return new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
+            return pMouse.Y - cMouse.Y;
         }
-
     }
+
 }

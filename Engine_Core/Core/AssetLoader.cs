@@ -6,7 +6,6 @@ namespace Engine_Core.Core
 {
     public static class AssetLoader
     {
-        private static Game game;
 
         private static ContentManager content;
 
